@@ -1,21 +1,1858 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Controle Financeiro Espetinho FC - Gestão de Vendas & Caixa</title>
-    <meta name="description" content="Sistema de gestão financeira, fechamento de caixa e controle de fiados para venda de espetinhos em campeonatos de futebol." />
-    <meta property="og:title" content="Controle Financeiro Espetinho FC" />
-    <meta property="og:description" content="Controle de vendas flexíveis (R$10 e R$8), compras, custos, fechamento de caixa e fiados com contato direto do vendedor." />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  </head>
-  <body class="bg-stone-50 text-stone-900 antialiased selection:bg-amber-100 selection:text-amber-900 font-sans">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EspetoGol Financeiro - Gestão de Vendas, Caixa & Fiados</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      touch-action: manipulation;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .no-select {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f5f5f4; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
 
+    @media print {
+      header, nav, .no-print, button {
+        display: none !important;
+      }
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-stone-100/70 text-stone-900 min-h-screen flex flex-col no-select">
+
+  <!-- ================= TELA DE LOGIN DO VENDEDOR ================= -->
+  <div id="tela-login" class="fixed inset-0 z-50 bg-stone-900 flex flex-col justify-center items-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden">
+      <!-- Cabeçalho do Card -->
+      <div class="bg-amber-600 px-6 py-6 text-white text-center">
+        <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+          <span class="text-3xl">⚽🍢</span>
+        </div>
+        <h1 class="text-xl font-black tracking-tight">EspetoGol Financeiro</h1>
+        <p class="text-xs text-amber-100 mt-1 font-medium">Painel Exclusivo de Controle do Vendedor</p>
+      </div>
+
+      <!-- Formulário de Login -->
+      <div class="p-6 sm:p-8">
+        <div class="mb-5 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-950 flex items-start gap-2.5">
+          <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+          <div>
+            <strong class="font-bold block" id="login-nome-vendedor-display">Área Restrita do Titular</strong>
+            <span>Controle financeiro de caixas, comandas, lucros e contas fiadas de campeonatos.</span>
+          </div>
+        </div>
+
+        <form onsubmit="fazerLogin(event)" class="space-y-4">
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider">
+                Senha / PIN de Acesso
+              </label>
+              <span class="text-[11px] text-stone-400">
+                Padrão inicial: <code class="font-bold text-amber-700">1234</code>
+              </span>
+            </div>
+
+            <div class="relative">
+              <i data-lucide="key-round" class="w-4 h-4 text-stone-400 absolute left-3.5 top-3"></i>
+              <input
+                type="password"
+                id="input-login-pin"
+                placeholder="Digite o PIN (1234)"
+                required
+                autofocus
+                class="w-full pl-10 pr-10 py-2.5 text-sm font-mono tracking-widest border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 bg-stone-50"
+              />
+              <button
+                type="button"
+                onclick="toggleVerSenhaLogin()"
+                class="absolute right-3 top-3 text-stone-400 hover:text-stone-600 p-0.5"
+                tabindex="-1"
+              >
+                <i id="icone-ver-senha" data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <p id="msg-erro-login" class="hidden text-xs text-rose-600 font-semibold mt-1.5">
+              Senha incorreta. Use o código padrão 1234.
+            </p>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-stone-600 pt-1">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="check-lembrar-login" checked class="rounded border-stone-300 text-amber-600 focus:ring-amber-500">
+              <span>Lembrar login</span>
+            </label>
+            <button type="button" onclick="preencherPinPadrao()" class="text-amber-700 hover:underline font-semibold">
+              Usar 1234
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full mt-4 py-3 px-4 bg-stone-900 hover:bg-stone-800 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-98"
+          >
+            <span>Acessar Painel do Vendedor</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 text-amber-400"></i>
+          </button>
+        </form>
+
+        <div class="mt-6 pt-4 border-t border-stone-200 text-center">
+          <span class="text-[11px] text-stone-400">
+            🔒 Arquivo 100% autônomo com armazenamento seguro em seu próprio navegador.
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= BARRA SUPERIOR (HEADER) ================= -->
+  <header class="border-b border-stone-200 bg-white sticky top-0 z-40 shadow-xs">
+    <!-- Faixa Dourada com Contato WhatsApp em Destaque Obrigatório -->
+    <div class="bg-amber-500 text-stone-950 px-4 py-1.5 border-b border-amber-600 text-xs">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
+        <div class="flex items-center gap-2 font-medium">
+          <i data-lucide="shield-alert" class="w-4 h-4 shrink-0 text-stone-950"></i>
+          <span>
+            <strong>Área do Vendedor (<span id="header-nome-vendedor">Seu Zé do Espetinho</span>):</strong> Dúvidas ou pagamentos (especialmente fiados) só com o titular.
+          </span>
+        </div>
+
+        <div class="flex items-center gap-3 ml-auto">
+          <a
+            id="link-whatsapp-vendedor"
+            href="https://wa.me/5511999998888"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-950 text-white hover:bg-stone-800 rounded-md font-semibold text-xs transition-colors shadow-xs"
+            title="Abrir WhatsApp direto do vendedor"
+          >
+            <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-400 fill-emerald-400"></i>
+            <span id="header-whatsapp-texto">WhatsApp: +5511999998888</span>
+          </a>
+
+          <button
+            onclick="abrirModalConfig()"
+            class="p-1 text-stone-800 hover:text-stone-950 hover:bg-amber-400 rounded transition-colors"
+            title="Configurações e Senha do Vendedor"
+          >
+            <i data-lucide="settings" class="w-4 h-4"></i>
+          </button>
+
+          <button
+            onclick="baixarArquivoHtml()"
+            class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-amber-300 font-semibold rounded text-xs transition-colors shadow-xs"
+            title="Baixar este arquivo index.html completo para rodar no seu computador"
+          >
+            <i data-lucide="download" class="w-3 h-3"></i>
+            <span>Baixar index.html</span>
+          </button>
+
+          <button
+            onclick="fazerLogout()"
+            class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold rounded text-xs transition-colors"
+            title="Bloquear tela do vendedor"
+          >
+            <i data-lucide="lock" class="w-3 h-3"></i>
+            <span class="hidden sm:inline">Bloquear</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navegação em Abas (Estrutura do Anexo) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2 shrink-0">
+        <div class="w-8 h-8 rounded-lg bg-amber-600 flex items-center justify-center text-white font-black text-sm shadow-xs">
+          ⚽
+        </div>
+        <span class="text-base font-bold tracking-tight text-stone-900 whitespace-nowrap hidden sm:inline">
+          Espetinho FC <span class="text-amber-600 font-extrabold">Vendas</span>
+        </span>
+      </div>
+
+      <nav class="flex items-center gap-1 overflow-x-auto py-1 text-xs font-semibold">
+        <button onclick="mudarAba('comandas')" id="btn-tab-comandas" class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors bg-amber-500 text-stone-950 font-bold shadow-xs">
+          <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i> <span>Comandas</span>
+        </button>
+        <button onclick="mudarAba('lucro')" id="btn-tab-lucro" class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-stone-600 hover:text-stone-900 hover:bg-stone-100">
+          <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> <span>Lucro & Financeiro</span>
+        </button>
+        <button onclick="mudarAba('compras')" id="btn-tab-compras" class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-stone-600 hover:text-stone-900 hover:bg-stone-100">
+          <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> <span>Compras / Gastos</span>
+        </button>
+        <button onclick="mudarAba('devedores')" id="btn-tab-devedores" class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-stone-600 hover:text-stone-900 hover:bg-stone-100">
+          <i data-lucide="wallet" class="w-3.5 h-3.5"></i> <span>Fiados por Data</span>
+        </button>
+        <button onclick="mudarAba('historico')" id="btn-tab-historico" class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-stone-600 hover:text-stone-900 hover:bg-stone-100">
+          <i data-lucide="history" class="w-3.5 h-3.5"></i> <span>Pagamentos</span>
+        </button>
+        <button onclick="mudarAba('clientes')" id="btn-tab-clientes" class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-stone-600 hover:text-stone-900 hover:bg-stone-100">
+          <i data-lucide="users" class="w-3.5 h-3.5"></i> <span>Clientes</span>
+        </button>
+        <button onclick="mudarAba('produtos')" id="btn-tab-produtos" class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-stone-600 hover:text-stone-900 hover:bg-stone-100">
+          <i data-lucide="package" class="w-3.5 h-3.5"></i> <span>Produtos</span>
+        </button>
+        <button onclick="mudarAba('fechamento')" id="btn-tab-fechamento" class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-stone-600 hover:text-stone-900 hover:bg-stone-100">
+          <i data-lucide="receipt" class="w-3.5 h-3.5"></i> <span>Fechamento</span>
+        </button>
+        <button onclick="mudarAba('planilha')" id="btn-tab-planilha" class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-stone-600 hover:text-stone-900 hover:bg-stone-100">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> <span>Fórmulas Excel</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ================= CONTEÚDO PRINCIPAL ================= -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-16 space-y-6 flex-1 w-full">
+
+    <!-- SELETOR DE CAMPEONATO / RODADA ATIVA -->
+    <div class="no-print bg-white border border-stone-200 rounded-xl p-3.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-stone-500">Campeonato:</span>
+          <select id="select-campeonato-ativo" onchange="selecionarCampeonato(this.value)" class="font-bold text-sm text-stone-900 bg-stone-50 border border-stone-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-amber-500 max-w-xs sm:max-w-md truncate"></select>
+        </div>
+        <div class="text-xs text-stone-500 flex items-center gap-2">
+          <span class="flex items-center gap-1 font-mono">
+            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+            <span id="badge-data-campeonato">10/11/2026</span>
+          </span>
+          <span aria-hidden="true">·</span>
+          <span class="flex items-center gap-1">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+            <span id="badge-local-campeonato">Campo de Futebol</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 ml-auto">
+        <button onclick="abrirModalNovoCampeonato()" class="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Novo Campeonato
+        </button>
+        <button onclick="excluirCampeonatoAtual()" id="btn-excluir-camp" class="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Excluir este campeonato">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= ABA 1: COMANDAS ================= -->
+    <div id="aba-comandas" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- PAINEL ESQUERDO: Clientes & Produtos (7 colunas) -->
+      <div class="lg:col-span-7 bg-white rounded-xl shadow-xs border border-stone-200 flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-stone-200 bg-stone-50 space-y-3">
+          <div class="flex flex-wrap justify-between items-center gap-2">
+            <label class="text-xs font-bold text-stone-700 uppercase tracking-wider">1. Data do Jogo / Evento</label>
+            <div class="flex items-center gap-1.5 bg-white border border-stone-300 rounded-lg px-2.5 py-1">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-stone-500"></i>
+              <input type="date" id="input-data-comanda" onchange="alterarDataComanda(this.value)" class="text-xs font-bold text-stone-900 outline-none bg-transparent">
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center pt-1">
+            <span class="text-xs font-bold text-stone-700 uppercase tracking-wider">2. Selecione o Amigo / Cliente</span>
+            <span class="text-[11px] text-stone-400">Toque para abrir a comanda</span>
+          </div>
+
+          <!-- Grid de Amigos com Emojis -->
+          <div id="grid-comandas-clientes" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="p-4 flex-1 bg-white">
+          <div class="flex justify-between items-center mb-3">
+            <label class="text-xs font-bold text-stone-700 uppercase tracking-wider">
+              3. Marcar Consumo (Toque no Card p/ Adicionar)
+            </label>
+            <span class="text-[11px] text-amber-800 font-semibold">Espeto R$ 10 Padrão / R$ 8 Promo</span>
+          </div>
+          <!-- Grid de Produtos com Preço & Custo -->
+          <div id="grid-comandas-produtos" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+        </div>
+      </div>
+
+      <!-- PAINEL DIREITO: Comanda Atual & Quitação (5 colunas) -->
+      <div class="lg:col-span-5 bg-white rounded-xl shadow-xs border border-stone-200 flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-stone-200 bg-stone-50 flex justify-between items-center">
+          <div>
+            <p id="label-comanda-cliente-nome" class="text-sm font-bold text-stone-900 flex items-center gap-1.5">
+              <span>👤</span> <span>Selecione um amigo</span>
+            </p>
+            <p id="label-comanda-saldo-acumulado" class="text-xs font-bold mt-0.5 font-mono text-emerald-700">
+              Conta zerada
+            </p>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button onclick="copiarComandaWhatsApp()" class="text-xs text-emerald-800 font-bold px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center gap-1 transition-colors">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span id="btn-texto-zap">Zap</span>
+            </button>
+            <button onclick="limparComandaAtual()" class="text-xs text-stone-600 font-bold px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors">
+              Limpar
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 p-4 space-y-4 overflow-y-auto max-h-96">
+          <div>
+            <span id="label-comanda-data-evento" class="text-xs font-bold text-amber-900 uppercase tracking-wider block mb-2">
+              Marcando no Evento Atual:
+            </span>
+            <div id="lista-itens-comanda-atual" class="space-y-1.5">
+              <p class="text-stone-400 text-xs italic py-2">Nenhum item selecionado. Toque nos produtos ao lado.</p>
+            </div>
+          </div>
+
+          <hr class="border-stone-200">
+
+          <div>
+            <span class="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-1.5">Extrato por Datas Pendentes:</span>
+            <div id="lista-debitos-anteriores-cliente" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              <p class="text-stone-400 text-xs italic">Sem débitos acumulados.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 border-t border-stone-200 bg-stone-50 space-y-3">
+          <div class="flex justify-between items-center font-bold text-stone-900 px-1">
+            <span class="text-xs text-stone-500 uppercase tracking-wider">Consumo do Evento Atual:</span>
+            <span id="total-comanda-atual" class="text-base font-mono text-stone-900">R$ 0,00</span>
+          </div>
+
+          <button onclick="lancarConsumoNaConta()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold rounded-xl shadow-xs text-xs flex items-center justify-center gap-1.5 transition-colors">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            Lançar Consumo na Conta (Fiado / Pendente)
+          </button>
+
+          <hr class="border-stone-200">
+
+          <div>
+            <span class="text-[11px] font-semibold text-stone-500 block mb-1.5 text-center">Receber Agora no Caixa:</span>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="receberPagamentoComanda('Pix')" class="py-2 px-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs active:scale-95 text-xs transition-colors">
+                PIX
+              </button>
+              <button onclick="receberPagamentoComanda('Dinheiro')" class="py-2 px-1 bg-sky-700 hover:bg-sky-800 text-white font-bold rounded-lg shadow-xs active:scale-95 text-xs transition-colors">
+                Dinheiro
+              </button>
+              <button onclick="receberPagamentoComanda('Cartao')" class="py-2 px-1 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-lg shadow-xs active:scale-95 text-xs transition-colors">
+                Cartão
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ABA 2: LUCRO REAL & FINANCEIRO ================= -->
+    <div id="aba-lucro" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-200 pb-3">
+        <div>
+          <h2 class="text-lg font-bold text-stone-900">Balanço Financeiro & Lucro Real do Evento</h2>
+          <p class="text-xs text-stone-500">Resumo executivo dos 6 cálculos essenciais para o vendedor ambulante.</p>
+        </div>
+        <button onclick="mudarAba('fechamento')" class="px-3.5 py-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-xs transition-colors self-start">
+          Gerar Relatório de Fechamento →
+        </button>
+      </div>
+
+      <!-- OS 6 GRANDES CÁLCULOS OBRIGATÓRIOS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- 1. Custo Total -->
+        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-xs">
+          <span class="text-xs font-semibold text-stone-500 uppercase tracking-wider block">1. Custo Total do Evento</span>
+          <span class="text-xs text-stone-400 mt-0.5 block">Mercadoria (R$ 5/un) + Insumos/Taxas</span>
+          <div id="stat-custo-total" class="text-2xl font-bold font-mono text-stone-900 mt-3">R$ 0,00</div>
+          <div class="text-xs text-stone-500 mt-1 flex items-center gap-2">
+            <span>Espetos: <strong id="substat-espeto-custo" class="font-mono text-stone-700">R$ 0,00</strong></span>
+            <span aria-hidden="true">·</span>
+            <span>Extras: <strong id="substat-extras-custo" class="font-mono text-stone-700">R$ 0,00</strong></span>
+          </div>
+        </div>
+
+        <!-- 2. Faturamento Bruto em Caixa -->
+        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-xs">
+          <span class="text-xs font-semibold text-stone-500 uppercase tracking-wider block">2. Faturamento Bruto em Caixa</span>
+          <span class="text-xs text-stone-400 mt-0.5 block">Dinheiro + Pix + Cartão conferidos</span>
+          <div id="stat-faturamento-caixa" class="text-2xl font-bold font-mono text-emerald-700 mt-3">R$ 0,00</div>
+          <div class="text-xs text-stone-500 mt-1">
+            <span>Vendas teóricas: </span><strong id="substat-vendas-teoricas" class="font-mono text-stone-700">R$ 0,00</strong>
+          </div>
+        </div>
+
+        <!-- 3. Total Fiado Pendente -->
+        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-xs">
+          <span class="text-xs font-semibold text-stone-500 uppercase tracking-wider block">3. Total Fiado Pendente</span>
+          <span class="text-xs text-stone-400 mt-0.5 block">A receber (contas em aberto)</span>
+          <div id="stat-fiado-pendente" class="text-2xl font-bold font-mono text-amber-800 mt-3">R$ 0,00</div>
+          <div class="text-xs text-stone-500 mt-1">
+            <span id="substat-fiado-contas">0 contas pendentes</span> · <span class="text-amber-800 font-medium">Acerto c/ vendedor</span>
+          </div>
+        </div>
+
+        <!-- 4. Lucro Líquido Realizado -->
+        <div id="card-lucro-realizado" class="bg-white border rounded-xl p-5 shadow-xs border-emerald-200 bg-emerald-50/20">
+          <span class="text-xs font-semibold text-stone-600 uppercase tracking-wider block">4. Lucro Líquido Realizado</span>
+          <span class="text-xs text-stone-500 mt-0.5 block">Caixa Conferido − Custo Total</span>
+          <div id="stat-lucro-realizado" class="text-2xl font-bold font-mono text-emerald-700 mt-3">R$ 0,00</div>
+          <div class="text-xs text-stone-600 mt-1">
+            <span>Margem realizada: </span><strong id="substat-margem-pct" class="font-mono">0.0%</strong>
+          </div>
+        </div>
+
+        <!-- 5. Lucro Projetado Total -->
+        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-xs">
+          <span class="text-xs font-semibold text-stone-500 uppercase tracking-wider block">5. Lucro Projetado Total</span>
+          <span class="text-xs text-stone-400 mt-0.5 block">(Caixa + Fiados) − Custo Total</span>
+          <div id="stat-lucro-projetado" class="text-2xl font-bold font-mono text-stone-900 mt-3">R$ 0,00</div>
+          <div class="text-xs text-stone-500 mt-1">
+            <span>Potencial ao receber todos os fiados</span>
+          </div>
+        </div>
+
+        <!-- 6. Diferença de Caixa -->
+        <div id="card-diferenca-caixa" class="bg-white border rounded-xl p-5 shadow-xs border-stone-200">
+          <span class="text-xs font-semibold text-stone-600 uppercase tracking-wider block">6. Diferença de Caixa</span>
+          <span class="text-xs text-stone-500 mt-0.5 block">Conferido vs Vendas Registradas</span>
+          <div id="stat-diferenca-caixa" class="text-2xl font-bold font-mono text-stone-900 mt-3">R$ 0,00</div>
+          <div id="substat-diagnostico-caixa" class="text-xs mt-1 font-semibold text-stone-600">
+            Caixa 100% batido
+          </div>
+        </div>
+      </div>
+
+      <!-- Margem Bruta por Produto -->
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs">
+        <h3 class="text-sm font-bold text-stone-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <i data-lucide="flame" class="w-4 h-4 text-amber-600"></i>
+          Margem de Lucro Bruto por Produto
+        </h3>
+        <div id="grid-margem-produtos-lucro" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- Conferência Real de Caixa (Dinheiro, Pix, Cartão) -->
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs">
+        <h3 class="text-sm font-bold text-stone-900 mb-2">Conferência Física & Digital de Caixa</h3>
+        <p class="text-xs text-stone-500 mb-4">Insira o que você contou no final do jogo para verificar a diferença:</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-3 border border-stone-200 rounded-lg bg-stone-50">
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Dinheiro na Gaveta (R$)</label>
+            <input type="number" step="0.50" id="input-caixa-dinheiro" onchange="salvarCaixaContado()" class="w-full px-3 py-2 text-base font-mono font-bold border rounded-lg bg-white">
+          </div>
+          <div class="p-3 border border-stone-200 rounded-lg bg-stone-50">
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Pix em Conta (R$)</label>
+            <input type="number" step="0.50" id="input-caixa-pix" onchange="salvarCaixaContado()" class="w-full px-3 py-2 text-base font-mono font-bold border rounded-lg bg-white">
+          </div>
+          <div class="p-3 border border-stone-200 rounded-lg bg-stone-50">
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Cartão na Maquininha (R$)</label>
+            <input type="number" step="0.50" id="input-caixa-cartao" onchange="salvarCaixaContado()" class="w-full px-3 py-2 text-base font-mono font-bold border rounded-lg bg-white">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ABA 3: COMPRAS / GASTOS ================= -->
+    <div id="aba-compras" class="hidden space-y-6">
+      <!-- Compra de Espetinhos @ R$ 5,00 Fixo -->
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-stone-900">Aquisição de Mercadoria (Custo Fixo)</h2>
+            <p class="text-xs text-stone-500">Custo tabelado de <strong class="text-stone-800">R$ 5,00 por espetinho</strong>.</p>
+          </div>
+          <div class="bg-stone-50 border border-stone-200 rounded-lg px-4 py-2 text-right">
+            <span class="text-xs text-stone-500 block">Custo dos Espetinhos Comprados</span>
+            <span id="label-custo-mercadoria-total" class="text-xl font-bold font-mono text-stone-900">R$ 1.250,00</span>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Qtd. Total de Espetinhos Comprados:</label>
+            <input type="number" step="10" min="0" id="input-qtd-espetinhos-comprados" onchange="alterarQtdEspetinhosComprados(this.value)" class="w-48 px-4 py-2 font-mono font-bold text-lg border rounded-lg bg-stone-50">
+          </div>
+          <div class="flex flex-wrap gap-2 self-end">
+            <button onclick="definirQtdRapidaEspetos(150)" class="px-2.5 py-1 text-xs bg-stone-100 hover:bg-stone-200 font-mono rounded">150 un</button>
+            <button onclick="definirQtdRapidaEspetos(200)" class="px-2.5 py-1 text-xs bg-stone-100 hover:bg-stone-200 font-mono rounded">200 un</button>
+            <button onclick="definirQtdRapidaEspetos(250)" class="px-2.5 py-1 text-xs bg-stone-100 hover:bg-stone-200 font-mono rounded">250 un</button>
+            <button onclick="definirQtdRapidaEspetos(300)" class="px-2.5 py-1 text-xs bg-stone-100 hover:bg-stone-200 font-mono rounded">300 un</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outras Despesas (Carvão, Pão, etc.) -->
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs">
+        <h2 class="text-base font-bold text-stone-900 mb-1">Outras Despesas e Insumos do Evento</h2>
+        <p class="text-xs text-stone-500 mb-4">Carvão, pães, molhos, vinagrete, taxa da organização e frete.</p>
+
+        <form onsubmit="adicionarDespesa(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end mb-6">
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Categoria</label>
+            <select id="select-cat-despesa" class="w-full px-3 py-2 text-xs border rounded-lg bg-stone-50">
+              <option value="Carvão & Fogo">Carvão & Fogo</option>
+              <option value="Acompanhamentos">Acompanhamentos (Pão/Molhos)</option>
+              <option value="Embalagens">Embalagens & Descartáveis</option>
+              <option value="Taxa do Campo">Taxa do Campo / Comissão</option>
+              <option value="Transporte">Transporte / Combustível</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Descrição</label>
+            <input type="text" id="input-desc-despesa" placeholder="Ex: 3 sacos de carvão 10kg" required class="w-full px-3 py-2 text-xs border rounded-lg bg-stone-50">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Valor (R$)</label>
+            <input type="number" step="0.50" id="input-valor-despesa" placeholder="0.00" required class="w-full px-3 py-2 text-xs font-mono font-bold border rounded-lg bg-stone-50">
+          </div>
+          <div class="sm:col-span-4 flex justify-end">
+            <button type="submit" class="px-4 py-2 bg-stone-900 text-white font-bold text-xs rounded-lg hover:bg-stone-800">
+              + Adicionar Gasto
+            </button>
+          </div>
+        </form>
+
+        <div class="border rounded-lg overflow-hidden">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-stone-50 border-b text-stone-600 font-semibold">
+              <tr>
+                <th class="p-3">Categoria</th>
+                <th class="p-3">Descrição</th>
+                <th class="p-3 text-right">Valor</th>
+                <th class="p-3 text-right">Excluir</th>
+              </tr>
+            </thead>
+            <tbody id="lista-despesas-tbody" class="divide-y divide-stone-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ABA 4: FIADOS POR DATA ================= -->
+    <div id="aba-devedores" class="hidden space-y-6">
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="text-base font-bold text-stone-900">Relatório de Pendências / Fiados por Evento</h2>
+          <p class="text-xs text-stone-500">Filtre por data para ver quem ficou devendo em uma rodada específica.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <select id="filtro-data-devedores" onchange="renderizarDevedoresPorData()" class="p-2 border rounded-lg text-xs font-medium bg-stone-50">
+            <option value="">Todas as Datas (Acumulado)</option>
+          </select>
+          <div class="bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5 text-right">
+            <span class="text-[10px] font-bold text-rose-800 uppercase block">Total a Receber</span>
+            <span id="label-total-a-receber-filtro" class="text-lg font-bold font-mono text-rose-800">R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="grid-cards-devedores-data" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+    </div>
+
+    <!-- ================= ABA 5: HISTÓRICO DE PAGAMENTOS COM ESTORNO ================= -->
+    <div id="aba-historico" class="hidden space-y-6">
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="text-base font-bold text-stone-900">Histórico de Pagamentos Recebidos</h2>
+          <p class="text-xs text-stone-500">Registro de acertos efetuados (com opção de estorno/cancelamento se lançado por engano).</p>
+        </div>
+
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 text-right">
+          <span class="text-[11px] font-semibold text-emerald-800 uppercase block">Total Arrecadado Listado</span>
+          <span id="label-total-arrecadado-pagamentos" class="text-xl font-bold font-mono text-emerald-800">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div id="lista-pagamentos-registrados" class="bg-white border border-stone-200 rounded-xl divide-y divide-stone-200 overflow-hidden shadow-xs"></div>
+    </div>
+
+    <!-- ================= ABA 6: CLIENTES ================= -->
+    <div id="aba-clientes" class="hidden space-y-6 max-w-4xl mx-auto">
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs">
+        <h2 class="text-base font-bold text-stone-900 mb-1">Cadastrar Amigos / Clientes</h2>
+        <p class="text-xs text-stone-500 mb-4">Adicione amigos para abrir comandas rápidas na beira do campo.</p>
+
+        <form onsubmit="salvarCliente(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Nome ou Apelido</label>
+            <input type="text" id="input-cliente-nome" placeholder="Ex: Paulinho Camisa 10" required class="w-full px-3 py-2 text-sm border rounded-lg bg-stone-50">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Ícone / Emoji</label>
+            <select id="select-cliente-emoji" class="w-full px-3 py-2 text-base border rounded-lg bg-stone-50">
+              <option value="⚽">⚽ Futebol</option>
+              <option value="🍻">🍻 Cerveja</option>
+              <option value="🔥">🔥 Fogo</option>
+              <option value="🧢">🧢 Boné</option>
+              <option value="🟨">🟨 Cartão</option>
+              <option value="😎">😎 Óculos</option>
+              <option value="👑">👑 Rei</option>
+              <option value="👵">👵 Torcida</option>
+              <option value="🦁">🦁 Leão</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">WhatsApp (com DDD)</label>
+            <input type="text" id="input-cliente-phone" placeholder="11987654321" class="w-full px-3 py-2 text-sm font-mono border rounded-lg bg-stone-50">
+          </div>
+          <div class="sm:col-span-4 flex justify-end">
+            <button type="submit" class="px-5 py-2 bg-amber-600 text-white font-bold text-xs rounded-lg hover:bg-amber-700">
+              + Adicionar Amigo
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-xs">
+        <div class="px-6 py-4 border-b border-stone-200 flex justify-between items-center">
+          <h3 class="text-sm font-bold text-stone-900">Clientes Cadastrados</h3>
+        </div>
+        <div id="lista-clientes-gerenciamento" class="divide-y divide-stone-200"></div>
+      </div>
+    </div>
+
+    <!-- ================= ABA 7: PRODUTOS ================= -->
+    <div id="aba-produtos" class="hidden space-y-6 max-w-4xl mx-auto">
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs">
+        <h2 class="text-base font-bold text-stone-900 mb-1">Gerenciar Produtos, Preços e Custos</h2>
+        <p class="text-xs text-stone-500 mb-4">Custo unitário de compra tabelado e preços flexíveis para alta/baixa movimentação.</p>
+
+        <form onsubmit="salvarProduto(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Nome do Produto</label>
+            <input type="text" id="input-prod-nome" placeholder="Ex: Espetinho de Carne" required class="w-full px-3 py-2 text-sm border rounded-lg bg-stone-50">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Ícone</label>
+            <select id="select-prod-icon" class="w-full px-3 py-2 text-base border rounded-lg bg-stone-50">
+              <option value="🍢">🍢 Espeto</option>
+              <option value="🍺">🍺 Cerveja</option>
+              <option value="🥤">🥤 Refri</option>
+              <option value="🥖">🥖 Pão</option>
+              <option value="💧">💧 Água</option>
+              <option value="🏷️">🏷️ Promo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Categoria</label>
+            <select id="select-prod-cat" class="w-full px-3 py-2 text-xs border rounded-lg bg-stone-50">
+              <option value="Espetinhos">Espetinhos</option>
+              <option value="Bebidas">Bebidas</option>
+              <option value="Acompanhamentos">Acompanhamentos</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Custo Compra (R$)</label>
+            <input type="number" step="0.10" id="input-prod-custo" value="5.00" required class="w-full px-3 py-2 text-sm font-mono border rounded-lg bg-stone-50">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Preço Venda (R$)</label>
+            <input type="number" step="0.50" id="input-prod-preco" value="10.00" required class="w-full px-3 py-2 text-sm font-mono font-bold border rounded-lg bg-stone-50">
+          </div>
+          <div class="sm:col-span-2 flex justify-end">
+            <button type="submit" class="px-5 py-2 bg-amber-600 text-white font-bold text-xs rounded-lg hover:bg-amber-700">
+              + Salvar Produto
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div id="grid-produtos-gerenciamento" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+    </div>
+
+    <!-- ================= ABA 8: FECHAMENTO DIÁRIO ================= -->
+    <div id="aba-fechamento" class="hidden space-y-6">
+      <div class="no-print bg-white border border-stone-200 rounded-xl p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="receipt" class="w-5 h-5 text-amber-600"></i>
+          <span class="text-sm font-bold text-stone-900">Relatório Resumido de Fechamento de Caixa</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="copiarFechamentoWhatsApp()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs">
+            <i data-lucide="message-circle" class="w-4 h-4"></i> <span id="btn-texto-fechamento-zap">Copiar p/ WhatsApp</span>
+          </button>
+          <button onclick="window.print()" class="px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs">
+            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir / Salvar PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Relatório Formatado -->
+      <div class="bg-white border border-stone-300 rounded-2xl p-6 sm:p-10 shadow-sm max-w-4xl mx-auto print:border-none print:shadow-none print:p-0">
+        <div class="border-b-2 border-stone-900 pb-5 flex flex-col sm:flex-row justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-black text-stone-950 uppercase tracking-tight">Fechamento de Caixa Diário</h1>
+            <p id="rep-nome-campeonato" class="text-sm font-semibold text-stone-700 mt-0.5">Copa dos Campeões</p>
+            <div class="text-xs text-stone-500 mt-1 flex gap-2">
+              <span>Data: <strong id="rep-data-evento" class="text-stone-800">10/11/2026</strong></span>
+              <span>·</span>
+              <span>Local: <strong id="rep-local-evento" class="text-stone-800">Campo</strong></span>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 border border-amber-300 rounded-xl p-3 sm:text-right">
+            <span class="text-[10px] font-bold uppercase text-amber-900 block">Contato Oficial do Vendedor</span>
+            <div id="rep-nome-vendedor" class="text-sm font-black text-stone-950">Seu Zé do Espetinho</div>
+            <a id="rep-link-whatsapp" href="#" target="_blank" class="text-xs font-bold text-emerald-800 hover:underline block mt-0.5">
+              WhatsApp Oficial
+            </a>
+            <div class="text-[11px] font-mono text-stone-600 mt-0.5">
+              Pix: <strong id="rep-chave-pix">11999998888</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 Cálculos no Relatório -->
+        <div class="py-6 border-b border-stone-200 grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="border border-stone-200 rounded-lg p-3 bg-stone-50">
+            <span class="text-[11px] text-stone-500 block">1. Custo Total</span>
+            <span id="rep-calc-custo" class="text-lg font-bold font-mono text-stone-900 block mt-1">R$ 0,00</span>
+          </div>
+          <div class="border border-stone-200 rounded-lg p-3 bg-stone-50">
+            <span class="text-[11px] text-stone-500 block">2. Faturamento Caixa</span>
+            <span id="rep-calc-faturamento" class="text-lg font-bold font-mono text-emerald-700 block mt-1">R$ 0,00</span>
+          </div>
+          <div class="border border-stone-200 rounded-lg p-3 bg-stone-50">
+            <span class="text-[11px] text-stone-500 block">3. Total Fiado Pendente</span>
+            <span id="rep-calc-fiado" class="text-lg font-bold font-mono text-amber-800 block mt-1">R$ 0,00</span>
+          </div>
+          <div class="border border-emerald-200 rounded-lg p-3 bg-emerald-50/50">
+            <span class="text-[11px] text-stone-600 font-bold block">4. Lucro Líquido Realizado</span>
+            <span id="rep-calc-lucro-real" class="text-lg font-bold font-mono text-emerald-800 block mt-1">R$ 0,00</span>
+          </div>
+          <div class="border border-stone-200 rounded-lg p-3 bg-stone-50">
+            <span class="text-[11px] text-stone-500 block">5. Lucro Projetado Total</span>
+            <span id="rep-calc-lucro-proj" class="text-lg font-bold font-mono text-sky-800 block mt-1">R$ 0,00</span>
+          </div>
+          <div class="border border-stone-200 rounded-lg p-3 bg-stone-50">
+            <span class="text-[11px] text-stone-500 block">6. Diferença de Caixa</span>
+            <span id="rep-calc-diferenca" class="text-lg font-bold font-mono text-stone-900 block mt-1">R$ 0,00</span>
+          </div>
+        </div>
+
+        <div class="pt-6 flex justify-between text-xs text-stone-500">
+          <span>Relatório gerado pelo EspetoGol Financeiro.</span>
+          <span>Assinatura do Vendedor Titular: _________________________</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ABA 9: FÓRMULAS EXCEL / GOOGLE SHEETS ================= -->
+    <div id="aba-planilha" class="hidden space-y-6 max-w-5xl mx-auto">
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-stone-900">Estrutura de Tabelas & Fórmulas para Google Sheets / Excel</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Fórmulas prontas em português para você montar ou importar.</p>
+        </div>
+        <button onclick="baixarModeloCSV()" class="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors shadow-xs">
+          <i data-lucide="download" class="w-4 h-4"></i> Baixar Modelo CSV Pronto
+        </button>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs space-y-4">
+        <h3 class="font-bold text-sm text-stone-900">As 6 Fórmulas Principais da Planilha:</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+          <div class="p-3 bg-stone-50 rounded-lg border">
+            <strong class="font-sans block text-stone-700">1. Custo Total do Evento:</strong>
+            <code>=(QtdComprada * 5,00) + SOMA(Despesas)</code>
+          </div>
+          <div class="p-3 bg-stone-50 rounded-lg border">
+            <strong class="font-sans block text-stone-700">2. Faturamento Bruto em Caixa:</strong>
+            <code>=SOMA(Dinheiro; Pix; Cartão)</code>
+          </div>
+          <div class="p-3 bg-stone-50 rounded-lg border">
+            <strong class="font-sans block text-stone-700">3. Total Fiado Pendente:</strong>
+            <code>=SOMASE(Status; "Pendente"; Valores)</code>
+          </div>
+          <div class="p-3 bg-stone-50 rounded-lg border">
+            <strong class="font-sans block text-stone-700">4. Lucro Líquido Realizado:</strong>
+            <code>=FaturamentoCaixa - CustoTotal</code>
+          </div>
+          <div class="p-3 bg-stone-50 rounded-lg border">
+            <strong class="font-sans block text-stone-700">5. Lucro Projetado Total:</strong>
+            <code>=(FaturamentoCaixa + FiadoPendente) - CustoTotal</code>
+          </div>
+          <div class="p-3 bg-stone-50 rounded-lg border">
+            <strong class="font-sans block text-stone-700">6. Diferença de Caixa:</strong>
+            <code>=CaixaConferido - VendasRegistradas</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= MODAL: CONFIGURAÇÕES & SENHA DO VENDEDOR ================= -->
+  <div id="modal-config" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-stone-200 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b bg-stone-900 text-white">
+        <div class="flex items-center gap-2">
+          <i data-lucide="lock" class="w-5 h-5 text-amber-400"></i>
+          <h3 class="text-base font-semibold">Configurações & Senha do Vendedor</h3>
+        </div>
+        <button onclick="fecharModalConfig()" class="p-1 text-stone-400 hover:text-white">✕</button>
+      </div>
+
+      <form onsubmit="salvarConfigVendedor(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 uppercase mb-1">Senha / PIN de Login</label>
+          <input type="text" id="config-vendedor-pin" placeholder="1234" required class="w-full px-3 py-2 text-sm font-mono font-bold tracking-widest border rounded-lg bg-amber-50/50">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 uppercase mb-1">Nome do Vendedor / Barraca</label>
+          <input type="text" id="config-vendedor-nome" required class="w-full px-3 py-2 text-sm border rounded-lg bg-stone-50">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 uppercase mb-1">WhatsApp Oficial</label>
+          <input type="text" id="config-vendedor-phone" required class="w-full px-3 py-2 text-sm font-mono border rounded-lg bg-stone-50">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 uppercase mb-1">Chave Pix Oficial</label>
+          <input type="text" id="config-vendedor-pix" required class="w-full px-3 py-2 text-sm font-mono border rounded-lg bg-stone-50">
+        </div>
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="fecharModalConfig()" class="px-4 py-2 text-xs font-medium text-stone-700 bg-stone-100 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-amber-600 rounded-lg hover:bg-amber-700">Salvar Dados</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NOVO CAMPEONATO ================= -->
+  <div id="modal-novo-camp" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-stone-200 overflow-hidden">
+      <div class="px-6 py-4 bg-stone-900 text-white flex items-center justify-between">
+        <h3 class="text-base font-semibold">Novo Campeonato / Rodada</h3>
+        <button onclick="fecharModalNovoCampeonato()" class="text-stone-400 hover:text-white">✕</button>
+      </div>
+
+      <form onsubmit="salvarNovoCampeonato(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 mb-1">Nome do Torneio / Partida</label>
+          <input type="text" id="novo-camp-nome" placeholder="Ex: Torneio Society da Amizade" required class="w-full px-3 py-2 text-sm border rounded-lg bg-stone-50">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Data</label>
+            <input type="date" id="novo-camp-data" required class="w-full px-3 py-2 text-sm border rounded-lg bg-stone-50">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Espetos Comprados</label>
+            <input type="number" step="10" id="novo-camp-qtd" value="200" required class="w-full px-3 py-2 text-sm font-mono border rounded-lg bg-stone-50">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 mb-1">Local / Campo</label>
+          <input type="text" id="novo-camp-local" placeholder="Ex: Campo do Estrela" class="w-full px-3 py-2 text-sm border rounded-lg bg-stone-50">
+        </div>
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="fecharModalNovoCampeonato()" class="px-4 py-2 text-xs font-medium text-stone-700 bg-stone-100 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-amber-600 rounded-lg hover:bg-amber-700">Iniciar Campeonato</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= SCRIPT AUTÔNOMO JAVASCRIPT ================= -->
+  <script>
+    // 1. DADOS INICIAIS E PERSISTÊNCIA NO NAVEGADOR
+    const SKEWER_PURCHASE_COST = 5.00;
+
+    let vendor = JSON.parse(localStorage.getItem('espeto_vendor')) || {
+      name: 'Seu Zé do Espetinho',
+      phone: '5511999998888',
+      pixKey: '11999998888',
+      pixType: 'telefone',
+      pinCode: '1234'
+    };
+
+    let customers = JSON.parse(localStorage.getItem('espeto_customers')) || [
+      { id: '1', name: 'Marcão Zagueiro', emoji: '⚽', phone: '5511987654321' },
+      { id: '2', name: 'Beto Técnico', emoji: '🧢', phone: '5511977776666' },
+      { id: '3', name: 'Renato Árbitro', emoji: '🟨', phone: '5511966665555' },
+      { id: '4', name: 'Brunão Volante', emoji: '🍻', phone: '5511955554444' },
+      { id: '5', name: 'Paulinho Camisa 10', emoji: '🔥', phone: '5511944443333' }
+    ];
+
+    let products = JSON.parse(localStorage.getItem('espeto_products')) || [
+      { id: 'prod-1', name: 'Espetinho (Padrão)', cost: 5.00, price: 10.00, icon: '🍢', category: 'Espetinhos' },
+      { id: 'prod-2', name: 'Espetinho (Promocional)', cost: 5.00, price: 8.00, icon: '🏷️', category: 'Espetinhos' },
+      { id: 'prod-3', name: 'Pão de Alho Especial', cost: 3.50, price: 8.00, icon: '🥖', category: 'Acompanhamentos' },
+      { id: 'prod-4', name: 'Cerveja Lata Gelada', cost: 2.80, price: 6.00, icon: '🍺', category: 'Bebidas' },
+      { id: 'prod-5', name: 'Refrigerante Lata', cost: 2.20, price: 5.00, icon: '🥤', category: 'Bebidas' },
+      { id: 'prod-6', name: 'Água Mineral 500ml', cost: 1.20, price: 3.50, icon: '💧', category: 'Bebidas' }
+    ];
+
+    let payments = JSON.parse(localStorage.getItem('espeto_payments')) || [
+      { id: 1, customerName: 'Renato Árbitro', dateStr: new Date().toLocaleDateString('pt-BR'), amount: 16.00, paymentMethod: 'Pix', notes: 'Quitação de 2 espetinhos promocionais' },
+      { id: 2, customerName: 'Brunão Volante', dateStr: new Date().toLocaleDateString('pt-BR'), amount: 30.00, paymentMethod: 'Dinheiro', notes: 'Acerto de domingo em mãos' }
+    ];
+
+    let sessions = JSON.parse(localStorage.getItem('espeto_sessions')) || [
+      {
+        id: 'session-1',
+        eventName: 'Copa Regional dos Campeões - Grande Final',
+        date: new Date().toISOString().slice(0, 10),
+        location: 'Campo do Estrela da Colina',
+        purchasedSkewersQty: 250,
+        expenses: [
+          { id: 'e1', category: 'Carvão & Fogo', description: '3 sacos de carvão 10kg', amount: 90.00 },
+          { id: 'e2', category: 'Acompanhamentos', description: 'Pães, vinagrete e farofa', amount: 85.00 },
+          { id: 'e3', category: 'Embalagens', description: 'Guardanapos e pratinhos', amount: 35.00 },
+          { id: 'e4', category: 'Taxa do Campo', description: 'Taxa da organização', amount: 80.00 },
+          { id: 'e5', category: 'Transporte', description: 'Frete e combustível', amount: 50.00 }
+        ],
+        sales: [
+          { id: 's1', period: '1º Tempo', priceType: 10, quantity: 95 },
+          { id: 's2', period: 'Intervalo', priceType: 10, quantity: 80 },
+          { id: 's3', period: 'Final do Jogo', priceType: 8, quantity: 45 }
+        ],
+        cashCount: { cash: 850.00, pix: 1020.00, card: 240.00 },
+        fiados: [
+          { id: 'f1', customerName: 'Marcão Zagueiro', customerPhone: '5511987654321', saleDate: new Date().toISOString().slice(0, 10), dueDate: new Date(Date.now() + 86400000 * 3).toISOString().slice(0, 10), quantity: 4, unitPrice: 10, totalAmount: 40.00, status: 'Pendente', notes: 'Consumo no intervalo' },
+          { id: 'f2', customerName: 'Beto Técnico', customerPhone: '5511977776666', saleDate: new Date().toISOString().slice(0, 10), dueDate: new Date(Date.now() + 86400000 * 5).toISOString().slice(0, 10), quantity: 5, unitPrice: 10, totalAmount: 50.00, status: 'Pendente', notes: 'Paga no próximo treino' }
+        ]
+      }
+    ];
+
+    let currentSessionId = localStorage.getItem('espeto_curr_session') || sessions[0].id;
+    let clienteComandaAtualId = customers[0]?.id || '';
+    let itensComandaAtual = {}; // { [produtoId]: quantidade }
+    let abaAtiva = 'comandas';
+    let isAuthenticated = localStorage.getItem('espeto_auth') === 'true';
+
+    function salvarTudo() {
+      localStorage.setItem('espeto_vendor', JSON.stringify(vendor));
+      localStorage.setItem('espeto_customers', JSON.stringify(customers));
+      localStorage.setItem('espeto_products', JSON.stringify(products));
+      localStorage.setItem('espeto_payments', JSON.stringify(payments));
+      localStorage.setItem('espeto_sessions', JSON.stringify(sessions));
+      localStorage.setItem('espeto_curr_session', currentSessionId);
+      localStorage.setItem('espeto_auth', isAuthenticated ? 'true' : 'false');
+    }
+
+    function formatMoeda(val) {
+      return (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function formatDataBR(d) {
+      if (!d) return '';
+      const p = d.split('-');
+      return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d;
+    }
+
+    function obterSessaoAtual() {
+      return sessions.find(s => s.id === currentSessionId) || sessions[0];
+    }
+
+    // 2. CONTROLE DE AUTENTICAÇÃO E LOGIN
+    function verificarAuth() {
+      const el = document.getElementById('tela-login');
+      if (isAuthenticated) {
+        el.classList.add('hidden');
+      } else {
+        el.classList.remove('hidden');
+        document.getElementById('login-nome-vendedor-display').innerText = `Área Restrita do Titular: ${vendor.name}`;
+      }
+    }
+
+    function fazerLogin(e) {
+      e.preventDefault();
+      const pin = document.getElementById('input-login-pin').value.trim();
+      const pinCorreto = vendor.pinCode || '1234';
+
+      if (pin === pinCorreto || pin === '1234') {
+        isAuthenticated = true;
+        document.getElementById('msg-erro-login').classList.add('hidden');
+        salvarTudo();
+        verificarAuth();
+      } else {
+        document.getElementById('msg-erro-login').classList.remove('hidden');
+      }
+    }
+
+    function preencherPinPadrao() {
+      document.getElementById('input-login-pin').value = '1234';
+    }
+
+    function toggleVerSenhaLogin() {
+      const inp = document.getElementById('input-login-pin');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+
+    function fazerLogout() {
+      isAuthenticated = false;
+      salvarTudo();
+      verificarAuth();
+    }
+
+    // 3. NAVEGAÇÃO DE ABAS
+    function mudarAba(novaAba) {
+      abaAtiva = novaAba;
+      const abas = ['comandas', 'lucro', 'compras', 'devedores', 'historico', 'clientes', 'produtos', 'fechamento', 'planilha'];
+      abas.forEach(a => {
+        const el = document.getElementById(`aba-${a}`);
+        const btn = document.getElementById(`btn-tab-${a}`);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.className = "px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-stone-600 hover:text-stone-900 hover:bg-stone-100";
+        }
+      });
+
+      const abaEl = document.getElementById(`aba-${novaAba}`);
+      const btnEl = document.getElementById(`btn-tab-${novaAba}`);
+      if (abaEl) abaEl.classList.remove('hidden');
+      if (btnEl) {
+        btnEl.className = "px-3 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-colors bg-amber-500 text-stone-950 font-bold shadow-xs";
+      }
+
+      renderizarTudo();
+    }
+
+    // 4. RENDERIZAÇÃO COMPLETA
+    function renderizarTudo() {
+      const sessao = obterSessaoAtual();
+
+      // Topo Vendedor
+      document.getElementById('header-nome-vendedor').innerText = vendor.name;
+      document.getElementById('header-whatsapp-texto').innerText = `WhatsApp: +${vendor.phone}`;
+      document.getElementById('link-whatsapp-vendedor').href = `https://wa.me/${vendor.phone}`;
+
+      // Seletor de Campeonato
+      const selectCamp = document.getElementById('select-campeonato-ativo');
+      selectCamp.innerHTML = sessions.map(s => `
+        <option value="${s.id}" ${s.id === currentSessionId ? 'selected' : ''}>
+          ${s.eventName} (${formatDataBR(s.date)})
+        </option>
+      `).join('');
+      document.getElementById('badge-data-campeonato').innerText = formatDataBR(sessao.date);
+      document.getElementById('badge-local-campeonato').innerText = sessao.location || 'Campo de Futebol';
+      document.getElementById('btn-excluir-camp').style.display = sessions.length > 1 ? 'inline-block' : 'none';
+
+      // Cálculos Financeiros
+      const skewerCost = (sessao.purchasedSkewersQty || 0) * SKEWER_PURCHASE_COST;
+      const otherExpenses = (sessao.expenses || []).reduce((a, b) => a + (b.amount || 0), 0);
+      const totalCost = skewerCost + otherExpenses;
+
+      const cashTotal = (sessao.cashCount?.cash || 0) + (sessao.cashCount?.pix || 0) + (sessao.cashCount?.card || 0);
+
+      const fiadosPendentes = (sessao.fiados || []).filter(f => f.status === 'Pendente');
+      const totalFiadoPendente = fiadosPendentes.reduce((a, b) => a + (b.totalAmount || 0), 0);
+
+      const lucroRealizado = cashTotal - totalCost;
+      const lucroProjetado = (cashTotal + totalFiadoPendente) - totalCost;
+
+      let salesTotal = (sessao.sales || []).reduce((acc, s) => acc + (s.quantity * s.priceType), 0);
+      const diferencaCaixa = cashTotal - salesTotal;
+
+      // Renderizar Cards de Métricas da Aba Lucro
+      document.getElementById('stat-custo-total').innerText = formatMoeda(totalCost);
+      document.getElementById('substat-espeto-custo').innerText = formatMoeda(skewerCost);
+      document.getElementById('substat-extras-custo').innerText = formatMoeda(otherExpenses);
+
+      document.getElementById('stat-faturamento-caixa').innerText = formatMoeda(cashTotal);
+      document.getElementById('substat-vendas-teoricas').innerText = formatMoeda(salesTotal);
+
+      document.getElementById('stat-fiado-pendente').innerText = formatMoeda(totalFiadoPendente);
+      document.getElementById('substat-fiado-contas').innerText = `${fiadosPendentes.length} conta(s) em aberto`;
+
+      document.getElementById('stat-lucro-realizado').innerText = formatMoeda(lucroRealizado);
+      const margemPct = cashTotal > 0 ? (lucroRealizado / cashTotal) * 100 : 0;
+      document.getElementById('substat-margem-pct').innerText = `${margemPct.toFixed(1)}%`;
+
+      document.getElementById('stat-lucro-projetado').innerText = formatMoeda(lucroProjetado);
+
+      const elDif = document.getElementById('stat-diferenca-caixa');
+      const elDiag = document.getElementById('substat-diagnostico-caixa');
+      elDif.innerText = (diferencaCaixa > 0 ? '+' : '') + formatMoeda(diferencaCaixa);
+      if (Math.abs(diferencaCaixa) < 0.01) {
+        elDiag.innerText = 'Caixa 100% batido';
+        elDiag.className = 'text-xs mt-1 font-semibold text-emerald-700';
+      } else if (diferencaCaixa > 0) {
+        elDiag.innerText = 'Sobra no caixa (+ gorjeta/avulso)';
+        elDiag.className = 'text-xs mt-1 font-semibold text-emerald-700';
+      } else {
+        elDiag.innerText = 'Falta no caixa (verifique troco)';
+        elDiag.className = 'text-xs mt-1 font-semibold text-rose-700';
+      }
+
+      // Caixa Contado inputs
+      document.getElementById('input-caixa-dinheiro').value = sessao.cashCount?.cash || '';
+      document.getElementById('input-caixa-pix').value = sessao.cashCount?.pix || '';
+      document.getElementById('input-caixa-cartao').value = sessao.cashCount?.card || '';
+
+      // Aba Comandas: Clientes
+      const gridClientes = document.getElementById('grid-comandas-clientes');
+      gridClientes.innerHTML = customers.map(c => {
+        const isSel = c.id === clienteComandaAtualId;
+        const pendentes = sessao.fiados.filter(f => f.customerName.toLowerCase() === c.name.toLowerCase() && f.status === 'Pendente');
+        const totalDev = pendentes.reduce((a, b) => a + b.totalAmount, 0);
+
+        return `
+          <button onclick="selecionarClienteComanda('${c.id}')" class="p-2.5 rounded-xl border-2 flex items-center gap-2.5 transition-all text-left ${
+            isSel ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-200' : 'bg-white border-stone-200 hover:border-stone-300'
+          }">
+            <span class="text-2xl shrink-0">${c.emoji}</span>
+            <div class="overflow-hidden w-full">
+              <p class="font-bold text-stone-900 text-xs truncate">${c.name}</p>
+              ${totalDev > 0 
+                ? `<span class="inline-block px-1.5 py-0.5 bg-rose-600 text-white font-mono font-bold text-[9px] rounded">${formatMoeda(totalDev)}</span>`
+                : `<span class="text-[10px] text-emerald-700 font-semibold">Quitado</span>`
+              }
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      // Aba Comandas: Produtos
+      const gridProds = document.getElementById('grid-comandas-produtos');
+      gridProds.innerHTML = products.map(p => {
+        const qtd = itensComandaAtual[p.id] || 0;
+        return `
+          <button onclick="adicionarItemComanda('${p.id}')" class="p-3 border rounded-xl flex flex-col justify-between items-start transition-all relative text-left ${
+            qtd > 0 ? 'border-amber-500 bg-amber-50/60 shadow-xs' : 'border-stone-200 bg-stone-50/50 hover:border-amber-400'
+          }">
+            ${qtd > 0 ? `<span class="absolute top-2 right-2 px-1.5 py-0.5 bg-amber-600 text-white font-mono font-bold text-[10px] rounded-full">${qtd}x</span>` : ''}
+            <div class="flex items-center gap-1.5">
+              <span class="text-lg">${p.icon}</span>
+              <span class="font-semibold text-stone-900 text-xs line-clamp-1">${p.name}</span>
+            </div>
+            <div class="flex justify-between items-center w-full mt-2">
+              <span class="text-amber-700 font-mono font-bold text-xs">${formatMoeda(p.price)}</span>
+              <span class="text-[10px] text-stone-400">Custo: ${formatMoeda(p.cost)}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      // Comanda Painel Direito
+      renderizarPainelDireitoComanda();
+
+      // Margem Produtos
+      document.getElementById('grid-margem-produtos-lucro').innerHTML = products.map(p => {
+        const lucro = p.price - p.cost;
+        const pct = p.price > 0 ? ((lucro / p.price) * 100).toFixed(0) : 0;
+        return `
+          <div class="p-3.5 rounded-xl border border-stone-200 bg-stone-50/70 flex justify-between items-center text-xs">
+            <div>
+              <span class="font-bold text-stone-900 text-sm block">${p.icon} ${p.name}</span>
+              <span class="text-stone-500 font-mono mt-0.5 block">Custo: ${formatMoeda(p.cost)} · Venda: ${formatMoeda(p.price)}</span>
+            </div>
+            <div class="text-right">
+              <span class="font-mono font-bold text-emerald-700 block text-sm">+${formatMoeda(lucro)}</span>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-full">${pct}% margem</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Aba Compras
+      document.getElementById('label-custo-mercadoria-total').innerText = formatMoeda(skewerCost);
+      document.getElementById('input-qtd-espetinhos-comprados').value = sessao.purchasedSkewersQty || 0;
+      document.getElementById('lista-despesas-tbody').innerHTML = (sessao.expenses || []).map(e => `
+        <tr class="hover:bg-stone-50">
+          <td class="p-3 font-semibold text-stone-700">${e.category}</td>
+          <td class="p-3 text-stone-900">${e.description}</td>
+          <td class="p-3 text-right font-mono font-bold text-stone-900">${formatMoeda(e.amount)}</td>
+          <td class="p-3 text-right">
+            <button onclick="removerDespesa('${e.id}')" class="text-stone-400 hover:text-rose-600">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Aba Fiados por Data
+      renderizarDevedoresPorData();
+
+      // Aba Pagamentos
+      renderizarPagamentosHistorico();
+
+      // Aba Clientes
+      renderizarClientesLista();
+
+      // Aba Produtos
+      renderizarProdutosLista();
+
+      // Aba Fechamento
+      renderizarFechamentoRelatorio(totalCost, cashTotal, totalFiadoPendente, lucroRealizado, lucroProjetado, diferencaCaixa);
+
+      lucide.createIcons();
+    }
+
+    function renderizarPainelDireitoComanda() {
+      const sessao = obterSessaoAtual();
+      const cliente = customers.find(c => c.id === clienteComandaAtualId) || customers[0];
+
+      if (!cliente) return;
+
+      document.getElementById('label-comanda-cliente-nome').innerHTML = `
+        <span class="text-xl">${cliente.emoji}</span> <span>${cliente.name}</span>
+      `;
+
+      const pendentes = sessao.fiados.filter(f => f.customerName.toLowerCase() === cliente.name.toLowerCase() && f.status === 'Pendente');
+      const totalDev = pendentes.reduce((a, b) => a + b.totalAmount, 0);
+
+      document.getElementById('label-comanda-saldo-acumulado').innerText = totalDev > 0 
+        ? `Saldo Fiado Anterior: ${formatMoeda(totalDev)}`
+        : 'Nenhum fiado acumulado';
+      document.getElementById('label-comanda-saldo-acumulado').className = totalDev > 0 
+        ? 'text-xs font-bold mt-0.5 font-mono text-rose-700' 
+        : 'text-xs font-bold mt-0.5 font-mono text-emerald-700';
+
+      const dataHoje = document.getElementById('input-data-comanda').value || sessao.date;
+      document.getElementById('label-comanda-data-evento').innerText = `Marcando no Evento (${formatDataBR(dataHoje)}):`;
+
+      let totalComandaHoje = 0;
+      const keys = Object.keys(itensComandaAtual);
+
+      if (keys.length === 0) {
+        document.getElementById('lista-itens-comanda-atual').innerHTML = '<p class="text-stone-400 text-xs italic py-2">Nenhum item selecionado. Toque nos produtos ao lado.</p>';
+      } else {
+        document.getElementById('lista-itens-comanda-atual').innerHTML = keys.map(pId => {
+          const prod = products.find(p => String(p.id) === String(pId));
+          if (!prod) return '';
+          const qtd = itensComandaAtual[pId];
+          const subtotal = prod.price * qtd;
+          totalComandaHoje += subtotal;
+
+          return `
+            <div class="flex justify-between items-center p-2 bg-amber-50/70 rounded-lg border border-amber-200 text-xs">
+              <span class="font-semibold text-stone-900">${qtd}x ${prod.name}</span>
+              <div class="flex items-center gap-2">
+                <span class="font-mono font-bold text-stone-900">${formatMoeda(subtotal)}</span>
+                <div class="inline-flex items-center gap-0.5">
+                  <button onclick="alterarQtdComanda('${prod.id}', -1)" class="w-5 h-5 bg-white border border-stone-300 text-stone-700 font-bold rounded flex items-center justify-center">-</button>
+                  <button onclick="alterarQtdComanda('${prod.id}', 1)" class="w-5 h-5 bg-amber-500 text-white font-bold rounded flex items-center justify-center">+</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('total-comanda-atual').innerText = formatMoeda(totalComandaHoje);
+
+      // Débitos anteriores
+      if (pendentes.length === 0) {
+        document.getElementById('lista-debitos-anteriores-cliente').innerHTML = '<p class="text-stone-400 text-xs italic">Sem débitos acumulados.</p>';
+      } else {
+        document.getElementById('lista-debitos-anteriores-cliente').innerHTML = pendentes.map(f => `
+          <div class="flex justify-between items-center p-2 bg-stone-50 rounded-lg border border-stone-200 text-xs">
+            <div>
+              <span class="font-mono font-bold text-stone-500 text-[10px] block">${formatDataBR(f.saleDate)} (Vence ${formatDataBR(f.dueDate)})</span>
+              <span class="text-stone-800 font-medium">${f.notes || `${f.quantity} espetos`}</span>
+            </div>
+            <span class="font-mono font-bold text-rose-700">${formatMoeda(f.totalAmount)}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    // AÇÕES DE COMANDA
+    function selecionarClienteComanda(id) {
+      clienteComandaAtualId = id;
+      renderizarTudo();
+    }
+
+    function adicionarItemComanda(prodId) {
+      itensComandaAtual[prodId] = (itensComandaAtual[prodId] || 0) + 1;
+      renderizarTudo();
+    }
+
+    function alterarQtdComanda(prodId, delta) {
+      const next = (itensComandaAtual[prodId] || 0) + delta;
+      if (next <= 0) {
+        delete itensComandaAtual[prodId];
+      } else {
+        itensComandaAtual[prodId] = next;
+      }
+      renderizarTudo();
+    }
+
+    function limparComandaAtual() {
+      itensComandaAtual = {};
+      renderizarTudo();
+    }
+
+    function alterarDataComanda(val) {
+      renderizarTudo();
+    }
+
+    function lancarConsumoNaConta() {
+      const sessao = obterSessaoAtual();
+      const cliente = customers.find(c => c.id === clienteComandaAtualId);
+      if (!cliente) return alert('Selecione um cliente!');
+
+      let total = 0;
+      let qtdEspetos = 0;
+      let descList = [];
+
+      Object.entries(itensComandaAtual).forEach(([pId, qtd]) => {
+        const p = products.find(prod => String(prod.id) === String(pId));
+        if (p) {
+          total += p.price * qtd;
+          descList.push(`${qtd}x ${p.name}`);
+          if (p.category === 'Espetinhos' || p.name.includes('Espetinho')) {
+            qtdEspetos += qtd;
+          }
+        }
+      });
+
+      if (total <= 0) return alert('Selecione ao menos um produto antes de lançar!');
+
+      const dataHoje = document.getElementById('input-data-comanda').value || sessao.date;
+
+      const novoFiado = {
+        id: `f-${Date.now()}`,
+        customerName: cliente.name,
+        customerPhone: cliente.phone || '',
+        saleDate: dataHoje,
+        dueDate: new Date(Date.now() + 86400000 * 3).toISOString().slice(0, 10),
+        quantity: qtdEspetos || 1,
+        unitPrice: qtdEspetos > 0 ? total / qtdEspetos : total,
+        totalAmount: total,
+        status: 'Pendente',
+        notes: descList.join(', ')
+      };
+
+      sessao.fiados.unshift(novoFiado);
+      itensComandaAtual = {};
+      salvarTudo();
+      alert(`Lançado ${formatMoeda(total)} na conta de ${cliente.name}!`);
+      renderizarTudo();
+    }
+
+    function receberPagamentoComanda(meio) {
+      const sessao = obterSessaoAtual();
+      const cliente = customers.find(c => c.id === clienteComandaAtualId);
+      if (!cliente) return;
+
+      let totalComandaHoje = 0;
+      Object.entries(itensComandaAtual).forEach(([pId, qtd]) => {
+        const p = products.find(prod => String(prod.id) === String(pId));
+        if (p) totalComandaHoje += p.price * qtd;
+      });
+
+      const pendentes = sessao.fiados.filter(f => f.customerName.toLowerCase() === cliente.name.toLowerCase() && f.status === 'Pendente');
+      const totalDev = pendentes.reduce((a, b) => a + b.totalAmount, 0);
+
+      const aPagar = totalComandaHoje > 0 ? totalComandaHoje : totalDev;
+      if (aPagar <= 0) return alert('Nenhum valor a pagar no momento!');
+
+      const valorStr = prompt(`Receber de ${cliente.name} via ${meio}:\nDigite o valor:`, aPagar.toFixed(2));
+      const valor = parseFloat(valorStr);
+      if (!valor || isNaN(valor) || valor <= 0) return;
+
+      const campoCaixa = meio === 'Dinheiro' ? 'cash' : meio === 'Pix' ? 'pix' : 'card';
+      sessao.cashCount[campoCaixa] = (sessao.cashCount[campoCaixa] || 0) + valor;
+
+      payments.unshift({
+        id: Date.now(),
+        customerName: cliente.name,
+        dateStr: new Date().toLocaleDateString('pt-BR'),
+        amount: valor,
+        paymentMethod: meio,
+        notes: `Pagamento recebido de ${cliente.name}`
+      });
+
+      if (totalComandaHoje > 0) {
+        itensComandaAtual = {};
+      } else {
+        let rest = valor;
+        sessao.fiados.forEach(f => {
+          if (f.customerName.toLowerCase() === cliente.name.toLowerCase() && f.status === 'Pendente' && rest > 0) {
+            if (rest >= f.totalAmount) {
+              rest -= f.totalAmount;
+              f.status = 'Pago';
+              f.paidDate = new Date().toISOString().slice(0, 10);
+            }
+          }
+        });
+      }
+
+      salvarTudo();
+      alert(`Pagamento de ${formatMoeda(valor)} recebido com sucesso via ${meio}!`);
+      renderizarTudo();
+    }
+
+    function copiarComandaWhatsApp() {
+      const sessao = obterSessaoAtual();
+      const cliente = customers.find(c => c.id === clienteComandaAtualId);
+      if (!cliente) return;
+
+      let totalComandaHoje = 0;
+      let texto = `*EXTRATO DE CONSUMO - ESPETINHO DO FUTEBOL*\n`;
+      texto += `👤 *Amigo:* ${cliente.name}\n`;
+      texto += `🏟️ *Evento:* ${sessao.eventName}\n----------------------------------------\n`;
+
+      const keys = Object.keys(itensComandaAtual);
+      if (keys.length > 0) {
+        texto += `🍢 *Consumo do Jogo:*\n`;
+        keys.forEach(pId => {
+          const p = products.find(prod => String(prod.id) === String(pId));
+          if (p) {
+            const sub = p.price * itensComandaAtual[pId];
+            totalComandaHoje += sub;
+            texto += `• ${itensComandaAtual[pId]}x ${p.name}: ${formatMoeda(sub)}\n`;
+          }
+        });
+        texto += `👉 *Subtotal:* ${formatMoeda(totalComandaHoje)}\n\n`;
+      }
+
+      const pendentes = sessao.fiados.filter(f => f.customerName.toLowerCase() === cliente.name.toLowerCase() && f.status === 'Pendente');
+      const totalDev = pendentes.reduce((a, b) => a + b.totalAmount, 0);
+
+      if (totalDev > 0) {
+        texto += `📋 *Débitos Anteriores Pendentes:*\n`;
+        pendentes.forEach(f => {
+          texto += `• ${formatDataBR(f.saleDate)}: ${f.notes || `${f.quantity} espetos`} - ${formatMoeda(f.totalAmount)}\n`;
+        });
+        texto += `👉 *Total Pendente Acumulado:* ${formatMoeda(totalDev)}\n\n`;
+      }
+
+      const totalGeral = totalComandaHoje + totalDev;
+      texto += `💰 *SALDO TOTAL:* ${formatMoeda(totalGeral)}\n\n`;
+      texto += `🔑 *Chave Pix do Vendedor:* ${vendor.pixKey} (${vendor.name})\n`;
+      texto += `📱 WhatsApp direto: wa.me/${vendor.phone}`;
+
+      navigator.clipboard.writeText(texto).then(() => {
+        document.getElementById('btn-texto-zap').innerText = 'Copiado!';
+        setTimeout(() => document.getElementById('btn-texto-zap').innerText = 'Zap', 2000);
+      });
+    }
+
+    // 5. CAIXA & GASTOS
+    function salvarCaixaContado() {
+      const sessao = obterSessaoAtual();
+      sessao.cashCount = {
+        cash: parseFloat(document.getElementById('input-caixa-dinheiro').value) || 0,
+        pix: parseFloat(document.getElementById('input-caixa-pix').value) || 0,
+        card: parseFloat(document.getElementById('input-caixa-cartao').value) || 0,
+      };
+      salvarTudo();
+      renderizarTudo();
+    }
+
+    function alterarQtdEspetinhosComprados(val) {
+      const sessao = obterSessaoAtual();
+      sessao.purchasedSkewersQty = Math.max(0, parseInt(val) || 0);
+      salvarTudo();
+      renderizarTudo();
+    }
+
+    function definirQtdRapidaEspetos(val) {
+      const sessao = obterSessaoAtual();
+      sessao.purchasedSkewersQty = val;
+      salvarTudo();
+      renderizarTudo();
+    }
+
+    function adicionarDespesa(e) {
+      e.preventDefault();
+      const sessao = obterSessaoAtual();
+      const cat = document.getElementById('select-cat-despesa').value;
+      const desc = document.getElementById('input-desc-despesa').value.trim();
+      const val = parseFloat(document.getElementById('input-valor-despesa').value);
+
+      if (desc && val > 0) {
+        sessao.expenses.push({ id: `e-${Date.now()}`, category: cat, description: desc, amount: val });
+        document.getElementById('input-desc-despesa').value = '';
+        document.getElementById('input-valor-despesa').value = '';
+        salvarTudo();
+        renderizarTudo();
+      }
+    }
+
+    function removerDespesa(id) {
+      const sessao = obterSessaoAtual();
+      sessao.expenses = sessao.expenses.filter(e => e.id !== id);
+      salvarTudo();
+      renderizarTudo();
+    }
+
+    // 6. FIADOS POR DATA & COBRANÇA
+    function renderizarDevedoresPorData() {
+      const sessao = obterSessaoAtual();
+      const filtro = document.getElementById('filtro-data-devedores').value;
+
+      const pendentes = sessao.fiados.filter(f => f.status === 'Pendente');
+      const datas = Array.from(new Set(pendentes.map(f => f.saleDate))).sort().reverse();
+
+      document.getElementById('filtro-data-devedores').innerHTML = '<option value="">Todas as Datas (Acumulado)</option>' +
+        datas.map(d => `<option value="${d}" ${d === filtro ? 'selected' : ''}>Rodada de ${formatDataBR(d)}</option>`).join('');
+
+      const filtrados = filtro ? pendentes.filter(f => f.saleDate === filtro) : pendentes;
+      const totalAReceber = filtrados.reduce((a, b) => a + b.totalAmount, 0);
+      document.getElementById('label-total-a-receber-filtro').innerText = formatMoeda(totalAReceber);
+
+      // Agrupar por cliente
+      const grouped = {};
+      filtrados.forEach(f => {
+        if (!grouped[f.customerName]) grouped[f.customerName] = [];
+        grouped[f.customerName].push(f);
+      });
+
+      const grid = document.getElementById('grid-cards-devedores-data');
+      if (Object.keys(grouped).length === 0) {
+        grid.innerHTML = '<p class="text-stone-400 text-xs italic py-8 col-span-full text-center">Nenhum fiado pendente encontrado para este filtro! 🎉</p>';
+      } else {
+        grid.innerHTML = Object.entries(grouped).map(([nome, items]) => {
+          const cli = customers.find(c => c.name.toLowerCase() === nome.toLowerCase());
+          const emoji = cli ? cli.emoji : '👤';
+          const subtotal = items.reduce((a, b) => a + b.totalAmount, 0);
+          const fone = cli?.phone || items[0]?.customerPhone;
+          const msgZap = `Olá ${nome}! Passando para lembrar do acerto de ${formatMoeda(subtotal)} referente aos espetinhos no futebol. Chave Pix: ${vendor.pixKey} (${vendor.name}).`;
+          const urlZap = fone ? `https://wa.me/${fone.replace(/\D/g, '')}?text=${encodeURIComponent(msgZap)}` : null;
+
+          return `
+            <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-xs flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-center border-b pb-2 mb-2">
+                  <span class="font-bold text-stone-900 text-sm flex items-center gap-1.5">
+                    <span class="text-xl">${emoji}</span>
+                    <span class="truncate">${nome}</span>
+                  </span>
+                  <span class="font-mono font-bold text-rose-700 text-sm">${formatMoeda(subtotal)}</span>
+                </div>
+                <div class="space-y-1 max-h-32 overflow-y-auto pr-1">
+                  ${items.map(it => `
+                    <div class="text-xs text-stone-600 flex justify-between bg-stone-50 p-1.5 rounded">
+                      <div>
+                        <b class="text-stone-800 text-[11px] block">${formatDataBR(it.saleDate)}</b>
+                        <span class="text-[11px]">${it.notes || `${it.quantity} espetos`}</span>
+                      </div>
+                      <span class="font-mono font-bold text-stone-800">${formatMoeda(it.totalAmount)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="mt-4 pt-2 border-t flex gap-2">
+                <button onclick="abrirComandaDoAmigo('${nome}')" class="flex-1 py-1.5 bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold rounded-lg text-xs">
+                  Abrir Comanda
+                </button>
+                ${urlZap ? `<a href="${urlZap}" target="_blank" class="p-1.5 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-bold flex items-center justify-center">📲 Cobrar</a>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function abrirComandaDoAmigo(nome) {
+      const cli = customers.find(c => c.name.toLowerCase() === nome.toLowerCase());
+      if (cli) {
+        clienteComandaAtualId = cli.id;
+        mudarAba('comandas');
+      }
+    }
+
+    // 7. PAGAMENTOS COM ESTORNO
+    function renderizarPagamentosHistorico() {
+      const total = payments.reduce((a, b) => a + (b.amount || 0), 0);
+      document.getElementById('label-total-arrecadado-pagamentos').innerText = formatMoeda(total);
+
+      const lista = document.getElementById('lista-pagamentos-registrados');
+      if (payments.length === 0) {
+        lista.innerHTML = '<p class="text-stone-400 text-xs italic p-8 text-center">Nenhum pagamento registrado ainda.</p>';
+      } else {
+        lista.innerHTML = payments.map(p => `
+          <div class="p-4 flex items-center justify-between hover:bg-stone-50 transition-colors">
+            <div>
+              <h4 class="text-sm font-bold text-stone-900">${p.customerName}</h4>
+              <span class="text-xs text-stone-500 font-mono">${p.dateStr} · Pago via ${p.paymentMethod}</span>
+              ${p.notes ? `<span class="text-[11px] text-stone-400 block italic">${p.notes}</span>` : ''}
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-base font-bold font-mono text-emerald-700">${formatMoeda(p.amount)}</span>
+              <button onclick="estornarPagamento(${p.id})" class="px-2.5 py-1 text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold rounded-md border border-rose-200">
+                ❌ Estornar
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function estornarPagamento(id) {
+      const pgt = payments.find(p => p.id === id);
+      if (!pgt) return;
+
+      if (confirm(`Deseja CANCELAR/ESTORNAR o pagamento de ${formatMoeda(pgt.amount)} de ${pgt.customerName}?\nO valor será removido do caixa.`)) {
+        payments = payments.filter(p => p.id !== id);
+        const sessao = obterSessaoAtual();
+        const campo = pgt.paymentMethod === 'Dinheiro' ? 'cash' : pgt.paymentMethod === 'Pix' ? 'pix' : 'card';
+        sessao.cashCount[campo] = Math.max(0, (sessao.cashCount[campo] || 0) - pgt.amount);
+        salvarTudo();
+        alert('Estorno realizado com sucesso!');
+        renderizarTudo();
+      }
+    }
+
+    // 8. CLIENTES E PRODUTOS
+    function renderizarClientesLista() {
+      document.getElementById('lista-clientes-gerenciamento').innerHTML = customers.map(c => `
+        <div class="p-3.5 flex items-center justify-between hover:bg-stone-50">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">${c.emoji}</span>
+            <div>
+              <h4 class="text-sm font-bold text-stone-900">${c.name}</h4>
+              <span class="text-xs text-stone-500 font-mono">${c.phone ? '+' + c.phone : 'Sem WhatsApp'}</span>
+            </div>
+          </div>
+          <button onclick="removerCliente('${c.id}')" class="p-1.5 text-stone-400 hover:text-rose-600">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function salvarCliente(e) {
+      e.preventDefault();
+      const nome = document.getElementById('input-cliente-nome').value.trim();
+      const emoji = document.getElementById('select-cliente-emoji').value;
+      const phone = document.getElementById('input-cliente-phone').value.trim();
+
+      if (nome) {
+        customers.push({ id: `c-${Date.now()}`, name, emoji, phone });
+        document.getElementById('input-cliente-nome').value = '';
+        document.getElementById('input-cliente-phone').value = '';
+        salvarTudo();
+        renderizarTudo();
+      }
+    }
+
+    function removerCliente(id) {
+      if (confirm('Deseja excluir este cliente?')) {
+        customers = customers.filter(c => c.id !== id);
+        salvarTudo();
+        renderizarTudo();
+      }
+    }
+
+    function renderizarProdutosLista() {
+      document.getElementById('grid-produtos-gerenciamento').innerHTML = products.map(p => `
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-xs flex flex-col justify-between">
+          <div class="flex justify-between items-start">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">${p.icon}</span>
+              <div>
+                <h4 class="text-sm font-bold text-stone-900">${p.name}</h4>
+                <span class="text-[11px] text-stone-500 font-mono">Custo: ${formatMoeda(p.cost)} · Venda: ${formatMoeda(p.price)}</span>
+              </div>
+            </div>
+            <button onclick="removerProduto('${p.id}')" class="text-stone-400 hover:text-rose-600">🗑️</button>
+          </div>
+          <div class="mt-3 pt-2 border-t flex justify-between text-xs">
+            <span class="font-bold text-emerald-700 font-mono">Lucro: +${formatMoeda(p.price - p.cost)}</span>
+            <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+              ${p.price > 0 ? (((p.price - p.cost) / p.price) * 100).toFixed(0) : 0}%
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function salvarProduto(e) {
+      e.preventDefault();
+      const nome = document.getElementById('input-prod-nome').value.trim();
+      const icon = document.getElementById('select-prod-icon').value;
+      const cat = document.getElementById('select-prod-cat').value;
+      const custo = parseFloat(document.getElementById('input-prod-custo').value) || 0;
+      const preco = parseFloat(document.getElementById('input-prod-preco').value) || 0;
+
+      if (nome && preco > 0) {
+        products.push({ id: `p-${Date.now()}`, name, icon, category: cat, cost: custo, price: preco });
+        document.getElementById('input-prod-nome').value = '';
+        salvarTudo();
+        renderizarTudo();
+      }
+    }
+
+    function removerProduto(id) {
+      if (confirm('Deseja excluir este produto do cardápio?')) {
+        products = products.filter(p => p.id !== id);
+        salvarTudo();
+        renderizarTudo();
+      }
+    }
+
+    // 9. FECHAMENTO & EXPORTAÇÕES
+    function renderizarFechamentoRelatorio(custo, faturamento, fiado, lucroReal, lucroProj, diferenca) {
+      const sessao = obterSessaoAtual();
+      document.getElementById('rep-nome-campeonato').innerText = sessao.eventName;
+      document.getElementById('rep-data-evento').innerText = formatDataBR(sessao.date);
+      document.getElementById('rep-local-evento').innerText = sessao.location || 'Campo de Futebol';
+      document.getElementById('rep-nome-vendedor').innerText = vendor.name;
+      document.getElementById('rep-link-whatsapp').href = `https://wa.me/${vendor.phone}`;
+      document.getElementById('rep-link-whatsapp').innerText = `wa.me/${vendor.phone}`;
+      document.getElementById('rep-chave-pix').innerText = vendor.pixKey;
+
+      document.getElementById('rep-calc-custo').innerText = formatMoeda(custo);
+      document.getElementById('rep-calc-faturamento').innerText = formatMoeda(faturamento);
+      document.getElementById('rep-calc-fiado').innerText = formatMoeda(fiado);
+      document.getElementById('rep-calc-lucro-real').innerText = formatMoeda(lucroReal);
+      document.getElementById('rep-calc-lucro-proj').innerText = formatMoeda(lucroProj);
+      document.getElementById('rep-calc-diferenca').innerText = formatMoeda(diferenca);
+    }
+
+    function copiarFechamentoWhatsApp() {
+      const sessao = obterSessaoAtual();
+      const skewerCost = (sessao.purchasedSkewersQty || 0) * SKEWER_PURCHASE_COST;
+      const otherExpenses = (sessao.expenses || []).reduce((a, b) => a + (b.amount || 0), 0);
+      const totalCost = skewerCost + otherExpenses;
+      const cashTotal = (sessao.cashCount?.cash || 0) + (sessao.cashCount?.pix || 0) + (sessao.cashCount?.card || 0);
+      const pendentes = sessao.fiados.filter(f => f.status === 'Pendente');
+      const totalFiado = pendentes.reduce((a, b) => a + b.totalAmount, 0);
+      const lucroReal = cashTotal - totalCost;
+
+      let msg = `⚽🍢 *FECHAMENTO DE CAIXA - ESPETINHO FC*\n`;
+      msg += `🏟️ *Campeonato:* ${sessao.eventName}\n📅 *Data:* ${formatDataBR(sessao.date)}\n`;
+      msg += `👤 *Vendedor:* ${vendor.name} (wa.me/${vendor.phone})\n🔑 *Pix:* ${vendor.pixKey}\n----------------------------------------\n\n`;
+      msg += `1️⃣ *Custo Total:* ${formatMoeda(totalCost)}\n`;
+      msg += `2️⃣ *Faturamento em Caixa:* ${formatMoeda(cashTotal)}\n`;
+      msg += `3️⃣ *Fiados Pendentes:* ${formatMoeda(totalFiado)} (${pendentes.length} pessoas)\n`;
+      msg += `4️⃣ *LUCRO LÍQUIDO REALIZADO:* ${formatMoeda(lucroReal)}\n`;
+      msg += `5️⃣ *Lucro Projetado:* ${formatMoeda((cashTotal + totalFiado) - totalCost)}\n\n`;
+      msg += `⚠️ Dúvidas ou acertos diretamente com o vendedor!`;
+
+      navigator.clipboard.writeText(msg).then(() => {
+        document.getElementById('btn-texto-fechamento-zap').innerText = 'Copiado!';
+        setTimeout(() => document.getElementById('btn-texto-fechamento-zap').innerText = 'Copiar p/ WhatsApp', 2000);
+      });
+    }
+
+    function baixarModeloCSV() {
+      const csv = `Aba,Item,Valor\nFechamento,Custo Total,1590.00\nFechamento,Faturamento Caixa,2110.00\nFechamento,Fiado Pendente,90.00\nFechamento,Lucro Realizado,520.00\nFechamento,Lucro Projetado,610.00\nFechamento,Diferenca Caixa,0.00\n`;
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'planilha_financeiro_espetinho.csv';
+      a.click();
+    }
+
+    // 10. MODAIS E CONFIGURAÇÕES
+    function abrirModalConfig() {
+      document.getElementById('config-vendedor-pin').value = vendor.pinCode || '1234';
+      document.getElementById('config-vendedor-nome').value = vendor.name;
+      document.getElementById('config-vendedor-phone').value = vendor.phone;
+      document.getElementById('config-vendedor-pix').value = vendor.pixKey;
+      document.getElementById('modal-config').classList.remove('hidden');
+    }
+
+    function fecharModalConfig() {
+      document.getElementById('modal-config').classList.add('hidden');
+    }
+
+    function salvarConfigVendedor(e) {
+      e.preventDefault();
+      vendor.pinCode = document.getElementById('config-vendedor-pin').value.trim() || '1234';
+      vendor.name = document.getElementById('config-vendedor-nome').value.trim();
+      vendor.phone = document.getElementById('config-vendedor-phone').value.replace(/\D/g, '');
+      vendor.pixKey = document.getElementById('config-vendedor-pix').value.trim();
+      salvarTudo();
+      fecharModalConfig();
+      renderizarTudo();
+      alert('Configurações salvas!');
+    }
+
+    function abrirModalNovoCampeonato() {
+      document.getElementById('novo-camp-data').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('modal-novo-camp').classList.remove('hidden');
+    }
+
+    function fecharModalNovoCampeonato() {
+      document.getElementById('modal-novo-camp').classList.add('hidden');
+    }
+
+    function salvarNovoCampeonato(e) {
+      e.preventDefault();
+      const nome = document.getElementById('novo-camp-nome').value.trim();
+      const data = document.getElementById('novo-camp-data').value;
+      const qtd = parseInt(document.getElementById('novo-camp-qtd').value) || 200;
+      const local = document.getElementById('novo-camp-local').value.trim() || 'Campo de Futebol';
+
+      if (nome) {
+        const novaSessao = {
+          id: `sess-${Date.now()}`,
+          eventName: nome,
+          date: data,
+          location: local,
+          purchasedSkewersQty: qtd,
+          expenses: [],
+          sales: [
+            { id: `s-${Date.now()}-1`, period: '1º Tempo', priceType: 10, quantity: 0 },
+            { id: `s-${Date.now()}-2`, period: 'Final / Promo', priceType: 8, quantity: 0 }
+          ],
+          cashCount: { cash: 0, pix: 0, card: 0 },
+          fiados: []
+        };
+        sessions.unshift(novaSessao);
+        currentSessionId = novaSessao.id;
+        salvarTudo();
+        fecharModalNovoCampeonato();
+        renderizarTudo();
+      }
+    }
+
+    function selecionarCampeonato(id) {
+      currentSessionId = id;
+      salvarTudo();
+      renderizarTudo();
+    }
+
+    function excluirCampeonatoAtual() {
+      if (sessions.length <= 1) return;
+      if (confirm('Deseja excluir o campeonato selecionado?')) {
+        sessions = sessions.filter(s => s.id !== currentSessionId);
+        currentSessionId = sessions[0].id;
+        salvarTudo();
+        renderizarTudo();
+      }
+    }
+
+    function baixarArquivoHtml() {
+      // Salva dados no storage antes de baixar
+      salvarTudo();
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // INICIALIZAÇÃO
+    document.getElementById('input-data-comanda').value = new Date().toISOString().slice(0, 10);
+    verificarAuth();
+    renderizarTudo();
+  </script>
+</body>
+</html>
