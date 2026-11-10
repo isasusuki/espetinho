@@ -1,0 +1,6 @@
+{
+  "name": "Controle Financeiro Espetinho FC",
+  "description": "Sistema de gestão financeira, fechamento de caixa e controle de fiados para venda de espetinhos em campeonatos de futebol.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
